@@ -12,8 +12,10 @@ namespace DirWinFace
         string _text = "";
         string _path = "";
         int _selector = 0;
+        int _count = 0;
         List<string> _allfiles = new List<string>();
         public event Action<int> WorkInProcess;
+        public event Action<int> PreparInProcess;
 
         public Form1()
         {
@@ -24,12 +26,48 @@ namespace DirWinFace
 
         void InitialHandler()
         {
-            WorkInProcess += Signal;
+            WorkInProcess += SignalWork;
+            PreparInProcess += SignanPrepar;
         }
 
-        void Signal(int count)
+        void SignalWork(int count)
         {
-            this.Text = "Обработано записей: " + count;
+            //this.Text = "Обработано записей: " + count;
+            if (InvokeRequired)
+                {
+                    Action action = () =>
+                    {
+                        TmpText(count, "Обработано записей: ");
+                    };
+                    Invoke(action);
+                }
+                else
+                {
+                    TmpText(count, "Обработано записей: ");
+                } 
+        }
+
+        void SignanPrepar(int count)
+        {
+            //this.Text = "Подготавливается список: " + count;
+            if (InvokeRequired)
+                {
+                    Action action = () =>
+                    {
+                        TmpText(count, "Подготавливается список: ");
+                    };
+                    Invoke(action);
+                }
+                else
+                {
+                    TmpText(count, "Подготавливается список: ");
+                }
+        }
+
+        void TmpText(int count, string text)
+        {
+
+            this.Text = text + count;
         }
 
         private void InitCombo()
@@ -64,10 +102,19 @@ namespace DirWinFace
         void ProcessFile(string path)
         {
             _allfiles.Add(path);
+            //if(0 == 0)
+            if((++_count % 100) == 0)                       
+            {
+                if(PreparInProcess != null)
+                {
+                    PreparInProcess(_count);
+                }
+            }
         }
 
         static void ApplyAllFiles(string folder, Action<string> fileAction)
         {
+            
             foreach (string file in Directory.GetFiles(folder))
             {
                 fileAction(file);
@@ -77,6 +124,26 @@ namespace DirWinFace
                 try
                 {
                     ApplyAllFiles(subDir, fileAction);
+                }
+                catch
+                {
+                    // игнорируем файлы, к которым нет доступа...
+                }
+            }
+        }
+
+        static void ApplyAllDirs(string folder, Action<string> fileAction)
+        {
+            //foreach (string dir in Directory.GetDirectories(folder))
+            //{
+            //   fileAction(dir);
+            //}
+            foreach (string subDir in Directory.GetDirectories(folder))
+            {
+                fileAction(subDir);
+                try
+                {                    
+                    ApplyAllDirs(subDir, fileAction);
                 }
                 catch
                 {
@@ -100,10 +167,13 @@ namespace DirWinFace
                         _allfiles = Directory.GetFiles(path).ToList();
                         break;
                     case 2: // Вложенные каталоги со всеми подкаталогами
-                        _allfiles = Directory.GetDirectories(path, "*", SearchOption.AllDirectories).ToList();
+                        ApplyAllDirs(path, ProcessFile);
+                        _count = 0;
+                        //_allfiles = Directory.GetDirectories(path, "*", SearchOption.AllDirectories).ToList();
                         break;
                     case 3: // Вложенные файлы во всех подкаталогах
                         ApplyAllFiles(path, ProcessFile);
+                        _count = 0;
                         break;
                     default:
                         _allfiles = Directory.GetDirectories(path).ToList();
@@ -114,7 +184,7 @@ namespace DirWinFace
 
                 foreach (var item in _allfiles)
                 {                    
-                    if((++count % 100) == 1)
+                    if((++count % 100) == 0)
                     {
                         if (WorkInProcess != null)
                         {
