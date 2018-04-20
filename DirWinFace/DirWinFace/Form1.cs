@@ -110,7 +110,7 @@ namespace DirWinFace
             }
         }
 
-        static void ApplyAllFiles(string folder, Action<string> fileAction)
+        void ApplyAllFiles(string folder, Action<string> fileAction)
         {            
             foreach (string file in Directory.GetFiles(folder))
             {
@@ -129,7 +129,7 @@ namespace DirWinFace
             }
         }
 
-        static void ApplyAllDirs(string folder, Action<string> fileAction)
+        void ApplyAllDirs(string folder, Action<string> fileAction)
         {
             foreach (string subDir in Directory.GetDirectories(folder))
             {
@@ -171,31 +171,7 @@ namespace DirWinFace
                     default:
                         _allfiles = Directory.GetDirectories(path).ToList();
                         break;
-                }
-
-                //int count = 0;
-
-                foreach (var item in _allfiles)
-                {                    
-                    if((++_count % 100) == 0)
-                    {
-                        if (WorkInProcess != null)
-                        {
-                            WorkInProcess(_count);
-                        }
-                    }
-
-                    try
-                    {
-                        _text += (item + Environment.NewLine);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message);
-                        continue;
-                    }
-                }
-                
+                }                
                 if (InvokeRequired)
                 {
                     Action action = () =>
@@ -245,6 +221,18 @@ namespace DirWinFace
 
         private void UpdateText()
         {
+            _count = 0;
+            foreach (var item in _allfiles)
+            {                
+                if ((++_count % 100) == 0)
+                {
+                    if (WorkInProcess != null)
+                    {
+                        WorkInProcess(_count);
+                    }
+                }
+                _text += (item + Environment.NewLine);                
+            }
             richTextBox1.Text += _text;
             this.Text = _path + "   " + Rooles() ;
         }
