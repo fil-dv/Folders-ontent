@@ -9,6 +9,13 @@ namespace DirWinFace
 {
     public partial class Form1 : Form
     {
+        public Form1()
+        {
+            InitializeComponent();
+            InitialHandler();
+            InitCombo();
+        }
+
         string _text = "";
         string _path = "";
         int _selector = 0;
@@ -16,13 +23,6 @@ namespace DirWinFace
         List<string> _allfiles = new List<string>();
         public event Action<int> WorkInProcess;
         public event Action<int> PreparInProcess;
-
-        public Form1()
-        {
-            InitializeComponent();
-            InitialHandler();
-            InitCombo();
-        }
 
         void InitialHandler()
         {
@@ -32,24 +32,22 @@ namespace DirWinFace
 
         void SignalWork(int count)
         {
-            //this.Text = "Обработано записей: " + count;
             if (InvokeRequired)
                 {
                     Action action = () =>
                     {
-                        TmpText(count, "Обработано записей: ");
+                        TmpText(count, "Обработка записей: ");
                     };
                     Invoke(action);
                 }
                 else
                 {
-                    TmpText(count, "Обработано записей: ");
+                    TmpText(count, "Обработка записей: ");
                 } 
         }
 
         void SignanPrepar(int count)
         {
-            //this.Text = "Подготавливается список: " + count;
             if (InvokeRequired)
                 {
                     Action action = () =>
@@ -88,6 +86,7 @@ namespace DirWinFace
                 if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
                 {
                     _path = fbd.SelectedPath;
+                    _count = 0;
                     Thread th = new Thread(new ThreadStart(StartParse));
                     th.Start();
                 }
@@ -102,7 +101,6 @@ namespace DirWinFace
         void ProcessFile(string path)
         {
             _allfiles.Add(path);
-            //if(0 == 0)
             if((++_count % 100) == 0)                       
             {
                 if(PreparInProcess != null)
@@ -113,8 +111,7 @@ namespace DirWinFace
         }
 
         static void ApplyAllFiles(string folder, Action<string> fileAction)
-        {
-            
+        {            
             foreach (string file in Directory.GetFiles(folder))
             {
                 fileAction(file);
@@ -134,10 +131,6 @@ namespace DirWinFace
 
         static void ApplyAllDirs(string folder, Action<string> fileAction)
         {
-            //foreach (string dir in Directory.GetDirectories(folder))
-            //{
-            //   fileAction(dir);
-            //}
             foreach (string subDir in Directory.GetDirectories(folder))
             {
                 fileAction(subDir);
@@ -180,15 +173,15 @@ namespace DirWinFace
                         break;
                 }
 
-                int count = 0;
+                //int count = 0;
 
                 foreach (var item in _allfiles)
                 {                    
-                    if((++count % 100) == 0)
+                    if((++_count % 100) == 0)
                     {
                         if (WorkInProcess != null)
                         {
-                            WorkInProcess(count);
+                            WorkInProcess(_count);
                         }
                     }
 
@@ -242,6 +235,7 @@ namespace DirWinFace
         {
             _text = "";
             richTextBox1.Text = "";
+            this.Text = "Содержимое папки";
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -252,7 +246,27 @@ namespace DirWinFace
         private void UpdateText()
         {
             richTextBox1.Text += _text;
-            this.Text = "Содержимое папки";
+            this.Text = _path + "   " + Rooles() ;
+        }
+
+        private string Rooles()
+        {
+            string res = "";
+            switch (_count)
+            {
+                case 1:
+                    res = "Найдена 1 запись.";
+                    break;
+                case 2:                    
+                case 3:                    
+                case 4:
+                    res = "Найдено " + _count + " записи.";
+                    break;
+                default:
+                    res = "Найденo " + _count + " записей.";
+                    break;
+            }
+            return res;
         }
     }
 }

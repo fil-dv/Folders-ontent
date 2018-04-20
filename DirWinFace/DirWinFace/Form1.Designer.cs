@@ -38,9 +38,11 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(354, 406);
+            this.button1.Cursor = System.Windows.Forms.Cursors.Default;
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button1.Location = new System.Drawing.Point(306, 406);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(166, 23);
+            this.button1.Size = new System.Drawing.Size(214, 23);
             this.button1.TabIndex = 0;
             this.button1.Text = "Выбрать папку";
             this.button1.UseVisualStyleBackColor = true;
@@ -76,10 +78,11 @@
             // 
             // comboBox1
             // 
+            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBox1.FormattingEnabled = true;
             this.comboBox1.Location = new System.Drawing.Point(12, 408);
             this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(311, 21);
+            this.comboBox1.Size = new System.Drawing.Size(263, 21);
             this.comboBox1.TabIndex = 4;
             this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
